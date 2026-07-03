@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -732,37 +733,51 @@ html,body{height:100%;background:#1A0A2E;font-family:-apple-system,BlinkMacSyste
   </div>
 </div>
 
-<!-- ══════ LINE-BY-LINE REVIEW MODAL ══════ -->
+<!-- ══════ GROUPED REVIEW SCREEN ══════ -->
 <div class="modal-wrap" id="review-modal">
   <div class="modal-bd"></div>
-  <div class="modal-sheet" style="padding-bottom:32px;">
+  <div style="background:var(--bg);border-radius:20px 20px 0 0;position:relative;z-index:1;display:flex;flex-direction:column;max-height:92dvh;">
+    <!-- Header -->
+    <div style="background:var(--purple);border-radius:20px 20px 0 0;padding:16px 20px 14px;flex-shrink:0;">
+      <div class="sheet-handle" style="background:rgba(255,255,255,0.3);margin-bottom:12px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="color:#fff;font-size:17px;font-weight:700;">Review your items</div>
+          <div style="color:rgba(255,255,255,0.65);font-size:12px;margin-top:2px;" id="review-summary-line">Checking items…</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:7px 14px;font-size:12px;" onclick="reviewConfirmAll()">Confirm all</button>
+        </div>
+      </div>
+      <!-- Low confidence banner -->
+      <div id="review-lowconf-banner" style="display:none;background:rgba(230,126,34,0.25);border:1px solid rgba(230,126,34,0.5);border-radius:8px;padding:8px 12px;margin-top:10px;font-size:12px;color:#fff;">
+        ⚠ <span id="review-lowconf-count">0</span> items need your attention — shown at the top
+      </div>
+    </div>
+    <!-- Scrollable item list -->
+    <div id="review-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 16px;"></div>
+    <!-- Sticky confirm button -->
+    <div style="padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;">
+      <button class="btn btn-primary" onclick="reviewConfirmAll()">Confirm and get insights</button>
+      <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--text3);">Swipe items left to remove · tap to edit</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ ITEM EDIT SHEET ══════ -->
+<div class="modal-wrap" id="item-edit-modal">
+  <div class="modal-bd" onclick="closeItemEdit()"></div>
+  <div class="modal-sheet">
     <div class="sheet-handle"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-      <div style="font-size:17px;font-weight:700;">Confirm item</div>
-      <div style="font-size:12px;color:var(--text3);" id="review-counter">1 of 8</div>
-    </div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;" id="review-hint">Check the name and weight — edit if anything looks wrong</div>
-
-    <!-- Confidence indicator -->
-    <div id="review-confidence" style="margin-bottom:12px;border-radius:10px;padding:8px 12px;font-size:12px;display:none;"></div>
-
-    <div class="edit-field">
-      <label>Item name</label>
-      <input type="text" id="review-name" placeholder="e.g. Tenderstem Broccoli">
-    </div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:14px;" id="item-edit-title">Edit item</div>
+    <div class="edit-field"><label>Item name</label><input type="text" id="ie-name" placeholder="e.g. Tenderstem Broccoli"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="edit-field">
-        <label>Weight / quantity</label>
-        <input type="text" id="review-weight" placeholder="e.g. 200g, 2L, 6pk">
-      </div>
-      <div class="edit-field">
-        <label>Price (£)</label>
-        <input type="number" id="review-price" step="0.01" min="0" placeholder="0.00">
-      </div>
+      <div class="edit-field"><label>Weight / qty</label><input type="text" id="ie-weight" placeholder="e.g. 200g"></div>
+      <div class="edit-field"><label>Price (£)</label><input type="number" id="ie-price" step="0.01" min="0" placeholder="0.00"></div>
     </div>
     <div class="edit-field">
       <label>Category</label>
-      <select id="review-category">
+      <select id="ie-category">
         <option value="vegetables">Vegetables</option>
         <option value="fruit">Fruit</option>
         <option value="meat">Meat</option>
@@ -770,30 +785,18 @@ html,body{height:100%;background:#1A0A2E;font-family:-apple-system,BlinkMacSyste
         <option value="dairy">Dairy &amp; eggs</option>
         <option value="bread">Bread &amp; bakery</option>
         <option value="cereals">Cereals &amp; grains</option>
-        <option value="snacks">Snacks &amp; crisps</option>
+        <option value="snacks">Snacks</option>
         <option value="desserts">Desserts</option>
         <option value="alcohol">Alcohol</option>
         <option value="soft_drinks">Soft drinks</option>
-        <option value="condiments">Condiments &amp; sauces</option>
+        <option value="condiments">Condiments</option>
         <option value="ready_meals">Ready meals</option>
         <option value="frozen">Frozen</option>
         <option value="other">Other</option>
       </select>
     </div>
-
-    <!-- Nutrition preview from Open Food Facts -->
-    <div id="review-nutrition-preview" style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:none;">
-      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Nutrition data found (per 100g)</div>
-      <div id="review-nutrition-content" style="font-size:12px;color:var(--text2);"></div>
-    </div>
-
-    <div style="display:flex;gap:10px;">
-      <button class="btn btn-outline" style="flex:0 0 80px;" onclick="reviewSkip()">Skip</button>
-      <button class="btn btn-primary" onclick="reviewConfirm()">Confirm ✓</button>
-    </div>
-    <div style="margin-top:8px;">
-      <button class="btn btn-outline" style="color:var(--red);border-color:var(--red);font-size:13px;" onclick="reviewRemove()">Remove this item</button>
-    </div>
+    <button class="btn btn-primary" onclick="saveItemEdit()">Save</button>
+    <div style="margin-top:8px;"><button class="btn btn-outline" style="color:var(--red);border-color:var(--red);" onclick="removeItemEdit()">Remove this item</button></div>
   </div>
 </div>
 
@@ -1008,51 +1011,52 @@ async function runAnalysis(){
     const mimeType = primaryImg.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
     const base64 = primaryImg.split(',')[1];
 
-    updateLoader('AI reading receipt…','Gemini is extracting every item');
+    updateLoader('AI reading receipt…','GPT-4o Mini is reading your receipt');
 
-    // If two photos, combine by sending both as separate requests and merging
-    const results = await sendToBackend(backendUrl, base64, mimeType);
+    // Send first photo
+    const result1 = await sendToBackend(backendUrl, base64, mimeType);
 
-    // If second photo captured, also parse it and merge
+    // v2.0 backend returns {store, date, items[], summary{}}
+    let store = result1.store || 'Your shop';
+    let date  = result1.date  || new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    let items = result1.items || result1; // fallback for old format
+
+    // If second photo captured, merge items
     if(images[1] && images[1] !== 'demo'){
       const b2 = images[1].split(',')[1];
       const m2 = images[1].startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
       updateLoader('Reading second photo…','Merging both halves of receipt');
       try {
-        const results2 = await sendToBackend(backendUrl, b2, m2);
-        results.push(...results2);
+        const result2 = await sendToBackend(backendUrl, b2, m2);
+        const items2 = result2.items || result2;
+        items = items.concat(items2);
       } catch(e){ console.warn('Second photo parse failed, using first only'); }
     }
 
-    updateLoader('Fetching nutrition data…','Looking up Open Food Facts');
-    await delay(400);
+    updateLoader('Building your insights…','Matching nutrition data');
+    await delay(300);
     hideLoader();
 
-    if(!results.length){
-      throw new Error('No items extracted');
+    if(!items.length){
+      throw new Error('No food items found on this receipt. Make sure the receipt is well lit and fully in frame.');
     }
 
-    // Map backend response to internal format
-    const items = results.map(r => ({
-      name:     r.receipt_extracted_name || 'Unknown item',
-      weight:   r.receipt_extracted_weight || '',
-      price:    0, // backend doesn't return price from OCR — user confirms
-      category: validCategory(r.category),
-      nutrition: r.database_nutrition || {},
-      confidence: r.database_nutrition && r.database_nutrition.full_database_name ? 'high' : 'low'
-    }));
+    const summary = result1.summary || {};
+    if(summary.total_items){
+      showToast(`Found ${summary.total_items} items · ${summary.with_nutrition || 0} matched`);
+    }
 
-    startLineByLineReview(items, 'Your shop', new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}));
+    startLineByLineReview(items, store, date);
 
   } catch(err){
     hideLoader();
     console.error('Analysis error:', err);
     const msg = err.message || '';
-    const isConnErr = msg.includes('fetch') || msg.includes('network') || msg.includes('Failed');
+    const isConnErr = msg.includes('fetch') || msg.includes('network') || msg.includes('Failed') || msg.includes('NetworkError');
     alert(
       isConnErr
-        ? `Could not reach your EatIQ backend.\n\nCheck:\n• Your backend is running\n• The URL is correct in Profile → Backend URL\n• The server has GEMINI_API_KEY set\n\nUse the demo scan to test the rest of the app.`
-        : `Could not read the receipt.\n\nTips:\n• Hold the phone directly above the receipt\n• Make sure the full receipt is in the frame\n• Use bright overhead lighting\n• Try retaking the photo\n\nError: ${msg}`
+        ? `Could not reach your EatIQ backend.\n\nCheck:\n• Your Railway backend is running\n• The URL in Profile → Backend URL is correct\n• The OPENAI_API_KEY is set on Railway\n\nUse the demo scan to test the rest of the app.`
+        : `Could not read the receipt.\n\nTips:\n• Hold the phone directly above the receipt\n• Lay receipt flat — no creases in frame\n• Use bright overhead lighting\n• Tap the shutter then wait before moving\n\nError: ${msg}`
     );
   }
 }
@@ -1074,135 +1078,150 @@ async function sendToBackend(backendUrl, base64, mimeType){
 // LINE-BY-LINE REVIEW FLOW
 // ══════════════════════════════════════════
 let _reviewItems = [];
-let _reviewIdx = 0;
 let _reviewStore = '';
-let _reviewDate = '';
-let _confirmedItems = [];
+let _reviewDate  = '';
+let _editingItem = null;
 
-function startLineByLineReview(items, store, date){
-  _reviewItems = items.map((item, i) => ({...item, _idx: i}));
-  _reviewStore = store;
-  _reviewDate = date;
-  _confirmedItems = [];
-  _reviewIdx = 0;
+const CAT_LABELS = {
+  vegetables:'Vegetables', fruit:'Fruit', meat:'Meat & fish',
+  fish:'Meat & fish', dairy:'Dairy & eggs', bread:'Bread & bakery',
+  cereals:'Cereals & grains', snacks:'Snacks', desserts:'Desserts',
+  alcohol:'Alcohol', soft_drinks:'Soft drinks', condiments:'Condiments',
+  ready_meals:'Ready meals', frozen:'Frozen', other:'Other'
+};
+const CAT_COLORS = {
+  vegetables:'var(--green)', fruit:'var(--green)', meat:'var(--purple-mid)',
+  fish:'var(--purple-mid)', dairy:'var(--purple-light)', bread:'var(--amber)',
+  cereals:'var(--amber)', snacks:'var(--red)', desserts:'var(--red)',
+  alcohol:'var(--red)', soft_drinks:'var(--purple-light)',
+  condiments:'var(--text3)', ready_meals:'var(--purple-mid)',
+  frozen:'var(--purple-light)', other:'var(--text3)'
+};
 
-  // Sort: low-confidence items first so user sees them immediately
-  _reviewItems.sort((a,b) => {
-    const aLow = a.confidence === 'low' || !a.name || a.name === 'Unknown item';
-    const bLow = b.confidence === 'low' || !b.name || b.name === 'Unknown item';
-    return bLow - aLow;
+function startLineByLineReview(rawItems, store, date){
+  const raw = Array.isArray(rawItems) ? rawItems : (rawItems.items || rawItems);
+  _reviewItems = raw.map((item, i) => ({
+    idx:        i,
+    name:       item.receipt_extracted_name || item.name || 'Unknown item',
+    raw_name:   item.receipt_raw_name || item.name || '',
+    weight:     item.receipt_extracted_weight || item.weight || '',
+    price:      item.price || 0,
+    category:   item.category || 'other',
+    confidence: item.confidence || 'high',
+    nutrition:  item.database_nutrition || item.nutrition || {},
+    confirmed:  (item.confidence || 'high') !== 'low',
+    removed:    false,
+  }));
+  _reviewStore = store || 'Supermarket';
+  _reviewDate  = date  || new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  renderReviewList();
+  document.getElementById('review-modal').classList.add('open');
+}
+
+function renderReviewList(){
+  const items   = _reviewItems.filter(i => !i.removed);
+  const lowConf = items.filter(i => i.confidence === 'low');
+  document.getElementById('review-summary-line').textContent =
+    items.length + ' items · ' + lowConf.length + ' need review · from ' + _reviewStore;
+  const banner = document.getElementById('review-lowconf-banner');
+  if(lowConf.length > 0){
+    banner.style.display = 'block';
+    document.getElementById('review-lowconf-count').textContent = lowConf.length;
+  } else { banner.style.display = 'none'; }
+
+  const groups = {};
+  if(lowConf.length) groups['__low__'] = lowConf;
+  items.filter(i => i.confidence !== 'low').forEach(item => {
+    const cat = item.category || 'other';
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
   });
 
-  showReviewItem(0);
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+
+  Object.entries(groups).forEach(([cat, catItems]) => {
+    const isLow = cat === '__low__';
+    const header = document.createElement('div');
+    header.style.cssText = 'padding:10px 16px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:' + (isLow ? 'var(--amber)' : 'var(--text3)') + ';background:var(--bg);position:sticky;top:0;z-index:2;';
+    header.textContent = isLow ? '\u26a0 Needs your review' : (CAT_LABELS[cat] || cat);
+    list.appendChild(header);
+
+    catItems.forEach(item => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);background:' + (item.confidence === 'low' ? 'rgba(230,126,34,0.06)' : 'var(--surface)') + ';cursor:pointer;-webkit-tap-highlight-color:transparent;';
+      const dot = document.createElement('div');
+      dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:' + (isLow ? 'var(--amber)' : (CAT_COLORS[item.category] || 'var(--text3)')) + ';flex-shrink:0;';
+      const info = document.createElement('div');
+      info.style.cssText = 'flex:1;min-width:0;';
+      const nameLine = document.createElement('div');
+      nameLine.style.cssText = 'font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      nameLine.textContent = item.name;
+      const metaLine = document.createElement('div');
+      metaLine.style.cssText = 'font-size:11px;color:var(--text3);margin-top:2px;';
+      const parts = [];
+      if(item.weight) parts.push(item.weight);
+      if(item.nutrition && item.nutrition.calories_100g) parts.push(item.nutrition.calories_100g + ' kcal/100g');
+      if(item.confidence === 'low') parts.push('\u26a0 check name');
+      metaLine.textContent = parts.join(' · ');
+      info.appendChild(nameLine);
+      info.appendChild(metaLine);
+      const price = document.createElement('div');
+      price.style.cssText = 'font-size:14px;font-weight:600;color:var(--text);flex-shrink:0;';
+      price.textContent = item.price > 0 ? '\u00a3' + item.price.toFixed(2) : '\u2014';
+      const tick = document.createElement('div');
+      tick.style.cssText = 'width:22px;height:22px;border-radius:50%;background:' + (item.confirmed ? 'var(--green)' : 'var(--surface2)') + ';border:1.5px solid ' + (item.confirmed ? 'var(--green)' : 'var(--border)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:#fff;';
+      tick.textContent = item.confirmed ? '\u2713' : '';
+      row.appendChild(dot); row.appendChild(info); row.appendChild(price); row.appendChild(tick);
+      row.onclick = () => openItemEdit(item.idx);
+      list.appendChild(row);
+    });
+  });
 }
 
-function showReviewItem(idx){
-  if(idx >= _reviewItems.length){
-    // All items reviewed — show the bulk list
-    finishLineByLineReview();
-    return;
-  }
-
-  const item = _reviewItems[idx];
-  const total = _reviewItems.length;
-  const remaining = total - idx;
-  const isLowConf = item.confidence === 'low' || !item.name || item.name === 'Unknown item';
-
-  document.getElementById('review-counter').textContent = `${idx+1} of ${total}`;
-  document.getElementById('review-hint').textContent = isLowConf
-    ? 'AI could not identify this item clearly — please check and edit'
-    : 'Looks good — confirm or edit if needed';
-
-  // Confidence badge
-  const confEl = document.getElementById('review-confidence');
-  if(isLowConf){
-    confEl.style.display = 'block';
-    confEl.style.background = 'var(--amber-light)';
-    confEl.style.borderLeft = '4px solid var(--amber)';
-    confEl.style.color = 'var(--text)';
-    confEl.innerHTML = `<strong>⚠ Low confidence</strong> — AI wasn't sure about this item. Edit the name and weight before confirming.`;
-  } else {
-    confEl.style.display = 'none';
-  }
-
-  document.getElementById('review-name').value = item.name || '';
-  document.getElementById('review-weight').value = item.weight || '';
-  document.getElementById('review-price').value = item.price > 0 ? item.price.toFixed(2) : '';
-  const catSel = document.getElementById('review-category');
-  catSel.value = item.category || 'other';
-
-  // Nutrition preview
-  const nutPrev = document.getElementById('review-nutrition-preview');
-  const nutContent = document.getElementById('review-nutrition-content');
-  const nut = item.nutrition;
-  if(nut && nut.calories_100g){
-    nutPrev.style.display = 'block';
-    const m = nut.macronutrients_per_100g || {};
-    nutContent.innerHTML = `
-      <strong>${nut.full_database_name || item.name}</strong>${nut.brand ? ' · ' + nut.brand : ''}<br>
-      ${nut.calories_100g} kcal · Protein ${m.proteins_g||0}g · Fat ${m.fats_g||0}g · Carbs ${m.carbohydrates_g||0}g per 100g
-      ${nut.sugar_100g ? `· Sugar ${nut.sugar_100g}g` : ''}
-    `;
-  } else {
-    nutPrev.style.display = 'none';
-  }
-
-  document.getElementById('review-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('review-name').focus(), 200);
+function openItemEdit(idx){
+  _editingItem = _reviewItems.find(i => i.idx === idx);
+  if(!_editingItem) return;
+  document.getElementById('item-edit-title').textContent = _editingItem.confidence === 'low' ? '\u26a0 Check this item' : 'Edit item';
+  document.getElementById('ie-name').value     = _editingItem.name || '';
+  document.getElementById('ie-weight').value   = _editingItem.weight || '';
+  document.getElementById('ie-price').value    = _editingItem.price > 0 ? _editingItem.price.toFixed(2) : '';
+  document.getElementById('ie-category').value = _editingItem.category || 'other';
+  document.getElementById('item-edit-modal').classList.add('open');
 }
-
-function reviewConfirm(){
-  const name = document.getElementById('review-name').value.trim();
-  const weight = document.getElementById('review-weight').value.trim();
-  const price = parseFloat(document.getElementById('review-price').value) || 0;
-  const category = document.getElementById('review-category').value;
-
-  if(!name){ showToast('Please enter an item name'); return; }
-
-  const item = {..._reviewItems[_reviewIdx]};
-  item.name = name;
-  item.weight = weight;
-  item.price = price;
-  item.category = category;
-  _confirmedItems.push(item);
-
-  _reviewIdx++;
-  showReviewItem(_reviewIdx);
+function closeItemEdit(){ document.getElementById('item-edit-modal').classList.remove('open'); }
+function saveItemEdit(){
+  if(!_editingItem) return;
+  _editingItem.name       = document.getElementById('ie-name').value.trim() || _editingItem.name;
+  _editingItem.weight     = document.getElementById('ie-weight').value.trim();
+  _editingItem.price      = parseFloat(document.getElementById('ie-price').value) || 0;
+  _editingItem.category   = document.getElementById('ie-category').value;
+  _editingItem.confirmed  = true;
+  _editingItem.confidence = 'high';
+  closeItemEdit(); renderReviewList(); showToast('Saved \u2713');
 }
-
-function reviewSkip(){
-  // Skip — keep item as-is with whatever AI extracted
-  _confirmedItems.push({..._reviewItems[_reviewIdx]});
-  _reviewIdx++;
-  showReviewItem(_reviewIdx);
+function removeItemEdit(){
+  if(!_editingItem) return;
+  _editingItem.removed = true;
+  closeItemEdit(); renderReviewList(); showToast('Item removed');
 }
-
-function reviewRemove(){
-  // Remove this item entirely
-  _reviewIdx++;
-  showReviewItem(_reviewIdx);
-}
-
-function finishLineByLineReview(){
+function reviewConfirmAll(){
+  _reviewItems.forEach(i => { if(!i.removed) i.confirmed = true; });
   document.getElementById('review-modal').classList.remove('open');
-  // Now show the bulk review screen with all confirmed items
-  window._pendingItems = _confirmedItems.map(item => ({
-    name: item.name,
-    price: item.price || 0,
-    weight: item.weight || '',
-    category: item.category,
-    nutrition: item.nutrition || {}
+  finishReview(_reviewItems.filter(i => !i.removed));
+}
+function finishReview(confirmed){
+  window._pendingItems = confirmed.map(item => ({
+    name:      item.name,
+    price:     item.price || 0,
+    weight:    item.weight || '',
+    category:  item.category,
+    nutrition: item.nutrition || {},
   }));
   window._pendingStore = _reviewStore;
-
-  document.getElementById('scan-A').style.display='none';
-  const b=document.getElementById('scan-B'); b.style.display='flex';
-  document.getElementById('r-store').textContent = _reviewStore || 'Your shop';
-  document.getElementById('r-date').textContent = _reviewDate || new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  renderReceiptList(window._pendingItems);
-  setStep(4);
-  showToast(`${_confirmedItems.length} items confirmed`);
+  confirmScan();
 }
+
 
 function renderReceiptList(items){
   const list=document.getElementById('receipt-list'); list.innerHTML='';
